@@ -8,8 +8,6 @@ import net.quantum6.kit.SystemKit;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,14 +30,14 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     protected int mWidth;
     protected int mHeight;
     public final static int CODEC_TIME_OUT_US = 10;
-    public final static String MIME_CODEC = "video/avc";
-
     protected boolean debugFlag;
     private int errorCount = 0;
     
+    private boolean isInitedOK;
     
     private FpsCounter mFpsCounter;
 
+    private long mPresentTimeUs;
     protected MediaCodec.BufferInfo mBufferInfo = new MediaCodec.BufferInfo();
     
     //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
@@ -57,20 +55,30 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         try
         {
             mMediaCodec = getCodec();
+            if (mMediaCodec == null)
+            {
+                return false;
+            }
             //Log.e(TAG, "getName() = "+mMediaCodec.getName()+", "+mMediaCodec.getCodecInfo().getName());
             
             MediaFormat mediaFormat = getMediaFormat();
             mMediaCodec.configure(mediaFormat, mDisplaySurface, null, isEncoder() ? 1 : 0);
             mMediaCodec.start();
-            return true;
+            mPresentTimeUs = System.nanoTime() / 1000; 
+            isInitedOK = true;
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
-        return false;
+        return isInitedOK;
     }
 
+    public boolean isInited()
+    {
+        return isInitedOK;
+    }
+    
     //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{ MediaCodecable
     
     @Override
@@ -124,8 +132,8 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 inputData.mDataArray = new byte[inputSize];
             }
             inputBuffer.put(inputData.mDataArray, 0, inputSize);
-            
-            mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, 0L, 0);
+            long pts = System.nanoTime() / 1000 - mPresentTimeUs;
+            mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, pts, 0);
         }
 
         mBufferInfo = new MediaCodec.BufferInfo();
@@ -153,8 +161,9 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 ByteBuffer outputBuffer = isSdk19 ? getOutputBuffer19(outputBufferIndex) : getOutputBuffer21(outputBufferIndex);
                 if (outputData != null && outputBuffer != null && mBufferInfo.size > 0)
                 {
-	                outputBuffer.get(outputData.mDataArray, 0, mBufferInfo.size);
-	                len = mBufferInfo.size;
+                    len = mBufferInfo.size;
+
+                    outputData.setData(outputBuffer, len);
                 }
                 mMediaCodec.releaseOutputBuffer(outputBufferIndex, false);
             }
@@ -252,7 +261,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     
     protected MediaFormat getMediaFormat()
     {
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat(AndroidVideoCodec.MIME_CODEC, mWidth, mHeight);
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaCodecKit.MIME_CODEC_H264, mWidth, mHeight);
 
         //30K BLACK SCRN, 40K OK
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
@@ -344,173 +353,4 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         return 0;
     }
     
-    //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
-    
-    private final static void listColor(MediaCodecInfo codecInfo, String mime)
-    {
-        MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mime);
-        for (int i = 0; i < capabilities.colorFormats.length; i++)
-        {
-            int format = capabilities.colorFormats[i];
-            Log.e(TAG, "        color["+i+"]=" + format + ", hex=0x" + Integer.toHexString(format));
-            switch (format)
-            {
-                case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar:
-                case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar:
-                case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar:
-                case MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar:
-                case MediaCodecInfo.CodecCapabilities.COLOR_TI_FormatYUV420PackedSemiPlanar:
-                    Log.e(TAG, "        YUV color ");
-                    break;
-            }
-        }
-    }
-
-    public final static void listCodec()
-    {
-        /*
-         * int colorFormat = 0; MediaCodecInfo.CodecCapabilities capabilities =
-         * MediaCodecInfo.getCapabilitiesForType(MIME_AVC); for (int i = 0; i <
-         * capabilities.colorFormats.length && colorFormat == 0; i++) { int
-         * format = capabilities.colorFormats[i]; Log.e(TAG,
-         * "Using color format " + format); }
-         */
-        int numCodecs = MediaCodecList.getCodecCount();
-        Log.e(TAG, "listCodec="+numCodecs);
-        for (int i = 0; i < numCodecs; i++)
-        {
-            MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
-            Log.e(TAG, "codec["+i+"]="+codecInfo.getName());
-            String[] types = codecInfo.getSupportedTypes();
-            for (int j = 0; j < types.length; j++)
-            {
-                Log.e(TAG, "    types[" + j + "]=" + types[j]);
-                listColor(codecInfo, types[j]);
-            }
-        }
-        //
-    }
-
-    //}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
-    
-    
-    //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
-    
-    private final static MediaCodecInfo chooseVideoEncoder(String codecName, MediaCodecInfo def)
-    {
-        int nbCodecs = MediaCodecList.getCodecCount();
-        for (int i = 0; i < nbCodecs; i++)
-        {
-            MediaCodecInfo mci = MediaCodecList.getCodecInfoAt(i);
-            if (!mci.isEncoder())
-            {
-                continue;
-            }
-            String[] types = mci.getSupportedTypes();
-            for (int j = 0; j < types.length; j++)
-            {
-                //Log.d(TAG, "encoder=" + types[j]);
-                if (types[j].equalsIgnoreCase(codecName))
-                {
-                    // Log.i(TAG, String.format("vencoder %s types: %s",
-                    // mci.getName(), types[j]));
-                    //if (mci.getName().contains(name))
-                    return mci;
-                }
-            }
-        }
-        return def;
-    }
-
-    protected final static int chooseVideoEncoderColor(String codecName)
-    {
-        MediaCodecInfo vmci = chooseVideoEncoder(codecName, null);
-
-        int matchedColorFormat = 0;
-        MediaCodecInfo.CodecCapabilities cc = vmci.getCapabilitiesForType(AndroidVideoCodec.MIME_CODEC);
-        for (int i = 0; i < cc.colorFormats.length; i++)
-        {
-            int cf = cc.colorFormats[i];
-
-            Log.i(TAG, String.format("vencoder %s supports color fomart 0x%x(%d)", vmci.getName(), cf, cf));
-
-            // choose YUV for h.264, prefer the bigger one.
-            // corresponding to the color space transform in onPreviewFrame
-            if ((cf >= MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar
-                    && cf <= MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar))
-            {
-                if (cf > matchedColorFormat)
-                {
-                    matchedColorFormat = cf;
-                }
-            }
-        }
-        for (int i = 0; i < cc.profileLevels.length; i++)
-        {
-            //MediaCodecInfo.CodecProfileLevel pl = cc.profileLevels[i];
-            //Log.i(TAG, String.format("vencoder %s support profile %d, level %d", vmci.getName(), pl.profile, pl.level));
-        }
-        //Log.i(TAG, String.format("vencoder %s choose color format 0x%x(%d)", vmci.getName(), matchedColorFormat, matchedColorFormat));
-        return matchedColorFormat;
-    }
-    
-    //}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
-
-    public final static void YUV420SP_UV_EXCHANGE(int width, int height, byte[] in)
-    {
-        int pixels = width * height;
-        byte s;
-        int count = (pixels / 2);
-        for (int i = 0; i < count; i += 2)
-        {
-            s = in[pixels + i];
-            in[pixels + i] = in[pixels + i + 1];
-            in[pixels + i + 1] = s;
-        }
-    }
-
-    /*
-     * NV21: YYYYYYYY VUVU =>YUV420SP I420: YYYYYYYY UU VV =>YUV420P
-     */
-    public final static int NV21_2_yuv420p(byte[] dst, byte[] src, int w, int h)
-    {
-        int ysize = w * h;
-        int usize = w * h * 1 / 4;
-
-        byte[] dsttmp = dst;
-
-        // y
-        System.arraycopy(src, 0, dst, 0, ysize);
-
-        // u, 1/4
-        int srcPointer = ysize;
-        int dstPointer = ysize;
-        int count = usize;
-        while (count > 0)
-        {
-            srcPointer++;
-            dst[dstPointer] = src[srcPointer];
-            dstPointer++;
-            srcPointer++;
-            count--;
-        }
-
-        // v, 1/4
-        srcPointer = ysize;
-
-        count = usize;
-        while (count > 0)
-        {
-            dst[dstPointer] = src[srcPointer];
-            dstPointer++;
-            srcPointer += 2;
-            count--;
-        }
-
-        dst = dsttmp;
-
-        // _EF_TIME_DEBUG_END(0x000414141);
-
-        return 0;
-    }
 }

@@ -38,11 +38,6 @@ public final class AndroidVideoDecoder extends AndroidVideoCodec
     	return (mDisplaySurface == surface);
     }
     
-    public boolean isInitedOK()
-    {
-    	return (mDisplaySurface != null);
-    }
-    
     @Override
     public final boolean isEncoder()
     {
@@ -79,7 +74,7 @@ public final class AndroidVideoDecoder extends AndroidVideoCodec
     {
         try
         {
-            return MediaCodec.createDecoderByType(MIME_CODEC);
+            return MediaCodec.createDecoderByType(MediaCodecKit.MIME_CODEC_H264);
         }
         catch (Exception e)
         {

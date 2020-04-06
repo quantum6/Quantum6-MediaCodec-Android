@@ -127,4 +127,15 @@ public final class SystemKit
         return width*height*ImageFormat.getBitsPerPixel(PREVIEW_FORMAT) / 8;
     }
 
+    public final static String intToText(final int value, final int length)
+    {
+        String text = String.valueOf(value);
+        for (int i=length-text.length(); i>0; i--)
+        {
+            text = " "+text;
+        }
+        return text;
+    }
+    
+
 }
