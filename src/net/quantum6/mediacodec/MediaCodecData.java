@@ -36,21 +36,11 @@ public final class MediaCodecData
 	
     public void setData(ByteBuffer byteBuffer, int size)
     {
-        if (byteBuffer.isReadOnly())
+        if (mDataArray == null || mDataArray.length < size)
         {
-            if (mDataArray == null || mDataArray.length <= size)
-            {
-                mDataArray = new byte[size];
-            }
-            for (int i=0; i<size; i++)
-            {
-                mDataArray[i] = byteBuffer.get(i);
-            }
+            mDataArray = new byte[size];
         }
-        else
-        {
-            byteBuffer.get(mDataArray, 0, size);
-        }
+        byteBuffer.get(mDataArray, 0, size);
     }
 	
 	public void release()

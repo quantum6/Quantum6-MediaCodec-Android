@@ -1,7 +1,5 @@
 package net.quantum6.mediacodec;
 
-import java.nio.ByteBuffer;
-
 import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;

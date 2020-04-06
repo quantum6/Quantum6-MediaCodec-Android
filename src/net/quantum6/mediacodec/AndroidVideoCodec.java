@@ -126,14 +126,13 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         {
             ByteBuffer inputBuffer = isSdk19 ? getInputBuffer19(inputBufferIndex, inputSize) : getInputBuffer21(inputBufferIndex);
             inputBuffer.clear();
-            //Log.d(TAG, "process() "+inputBuffer.capacity()+", "+inputData.mDataArray.length+", "+inputSize);
-            if (inputData.mDataArray.length < inputSize)
+            //inputBuffer.limit(inputSize) also exception.
+            if (inputBuffer.limit() >= inputSize)
             {
-                inputData.mDataArray = new byte[inputSize];
+                inputBuffer.put(inputData.mDataArray, 0, inputSize);
+                long pts = System.nanoTime() / 1000 - mPresentTimeUs;
+                mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, pts, 0);
             }
-            inputBuffer.put(inputData.mDataArray, 0, inputSize);
-            long pts = System.nanoTime() / 1000 - mPresentTimeUs;
-            mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, pts, 0);
         }
 
         mBufferInfo = new MediaCodec.BufferInfo();
