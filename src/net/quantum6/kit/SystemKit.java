@@ -1,6 +1,7 @@
 package net.quantum6.kit;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,6 +35,10 @@ public final class SystemKit
         long appcpu     = cpuTimes[SystemKit.CPU_APP]  - mCpuTimes[SystemKit.CPU_APP];
         
         long totalcpu   = idlecpu + workcpu;
+        if (totalcpu == 0)
+        {
+            totalcpu = 100;
+        }
         int  apprate    = (int)(1.0*appcpu /totalcpu*100+0.5);
         int  workrate   = (int)(1.0*workcpu/totalcpu*100+0.5);
         float memory    = (SystemKit.getAppMemory(context)/100)/10.0f;
@@ -71,8 +76,14 @@ public final class SystemKit
         String[] cpuInfos = null;
         try
         {
+            File file = new File("/proc/stat");
+            if (!file.exists() || !file.canRead())
+            {
+                return;
+            }
+            
             BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream("/proc/stat")), 1000);
+                    new FileInputStream(file)), 1000);
             String load = reader.readLine();
             reader.close();
             cpuInfos = load.split(" ");
@@ -80,6 +91,7 @@ public final class SystemKit
         catch (IOException ex)
         {
             ex.printStackTrace();
+            return;
         }
 
         cpu[CPU_WORK] =
