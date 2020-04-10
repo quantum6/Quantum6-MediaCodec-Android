@@ -71,17 +71,20 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     public int process(MediaCodecData inputData, MediaCodecData outputData)
     {
     	int inputSize = inputData.mDataSize;
-        if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar)
-        {
-            MediaCodecKit.YUV420SP_UV_EXCHANGE(mWidth, mHeight, inputData.mDataArray);
-        }
-        else if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar)
-        {
-            //Log.d(TAG, "MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar="+inputSize);
-            byte[] dest = new byte[inputSize];
-            MediaCodecKit.NV21_2_yuv420p(dest, inputData.mDataArray, mWidth, mHeight);
-            inputData.mDataArray = dest;
-        }
+    	if (inputSize > 0)
+    	{
+            if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar)
+            {
+                MediaCodecKit.YUV420SP_UV_EXCHANGE(mWidth, mHeight, inputData.mDataArray);
+            }
+            else if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar)
+            {
+                //Log.d(TAG, "MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar="+inputSize);
+                byte[] dest = new byte[inputSize];
+                MediaCodecKit.NV21_2_yuv420p(dest, inputData.mDataArray, mWidth, mHeight);
+                inputData.mDataArray = dest;
+            }
+    	}
         
         int ret = super.process(inputData, outputData);
         if (ret <= 0)

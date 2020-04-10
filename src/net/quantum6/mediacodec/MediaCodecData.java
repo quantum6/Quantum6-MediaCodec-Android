@@ -42,6 +42,11 @@ public final class MediaCodecData
         }
         byteBuffer.get(mDataArray, 0, size);
     }
+    
+    public void clearData()
+    {
+        mDataSize = 0;
+    }
 	
 	public void release()
 	{
