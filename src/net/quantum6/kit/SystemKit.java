@@ -107,8 +107,14 @@ public final class SystemKit
         try
         {
             int pid = android.os.Process.myPid();
+            File file = new File("/proc/" + pid + "/stat");
+            if (!file.exists() || !file.canRead())
+            {
+                return;
+            }
+
             BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream("/proc/" + pid + "/stat")), 1000);
+                    new FileInputStream(file)), 1000);
             String load = reader.readLine();
             reader.close();
             cpuInfos = load.split(" ");
@@ -116,6 +122,7 @@ public final class SystemKit
         catch (IOException ex)
         {
             ex.printStackTrace();
+            return;
         }
         cpu[CPU_APP] =
                  (Long.parseLong(cpuInfos[13])
