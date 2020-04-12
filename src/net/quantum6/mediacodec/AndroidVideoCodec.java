@@ -84,42 +84,42 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     @Override
     public int initCodec()
     {
-    	return 0;
+        return 0;
     }
     
     @Override
     public int process(MediaCodecData inputData, MediaCodecData outputData)
     {
-    	if (null == mMediaCodec)
-    	{
-    		return 0;
-    	}
-    	
-    	if (null != mFpsCounter)
-    	{
-    		mFpsCounter.count();
-    	}
-    	
-    	if (outputData.mDataArray == null)
-    	{
-    		byte[] data = new byte[isEncoder() ? SystemKit.getEncodedBufferSize(mWidth, mHeight) : SystemKit.getDecodedBufferSize(mWidth, mHeight)];
-    		outputData.setData(data);
-    	}
+        if (null == mMediaCodec)
+        {
+            return -1;
+        }
+        
+        if (null != mFpsCounter)
+        {
+            mFpsCounter.count();
+        }
+        
+        if (outputData.mDataArray == null)
+        {
+            byte[] data = new byte[isEncoder() ? SystemKit.getEncodedBufferSize(mWidth, mHeight) : SystemKit.getDecodedBufferSize(mWidth, mHeight)];
+            outputData.setData(data);
+        }
 
-    	int inputSize = inputData.mDataSize;
-    	//Log.d(TAG, "inputSize="+inputData.mDataSize+", "+inputData.mDataArray.length);
-    	boolean isSdk19 = (Build.VERSION.SDK_INT <= 19);
-        int len = 0;
+        int inputSize = inputData.mDataSize;
+        //Log.d(TAG, "inputSize="+inputData.mDataSize+", "+inputData.mDataArray.length);
+        boolean isSdk19 = (Build.VERSION.SDK_INT <= 19);
         int inputBufferIndex = -1;
         try
         {
-        	inputBufferIndex = mMediaCodec.dequeueInputBuffer(CODEC_TIME_OUT_US);
+            inputBufferIndex = mMediaCodec.dequeueInputBuffer(CODEC_TIME_OUT_US);
         }
         catch (Exception e)
         {
-        	e.printStackTrace();
-        	inputBufferIndex = -1;
-        	errorCount++;
+            e.printStackTrace();
+            //inputBufferIndex = -1;
+            //errorCount++;
+            return -1;
         }
         
         if (inputSize > 0 && inputBufferIndex >= 0)
@@ -139,13 +139,14 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         int outputBufferIndex = -1;
         try
         {
-        	outputBufferIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, CODEC_TIME_OUT_US); 
+            outputBufferIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, CODEC_TIME_OUT_US); 
         }
         catch (Exception e)
         {
-        	e.printStackTrace();
-        	outputBufferIndex = -1;
-        	errorCount++;
+            e.printStackTrace();
+            //outputBufferIndex = -1;
+            //errorCount++;
+            return -1;
         }
         /*Log.d(TAG, "Encoder="+this.isEncoder()
                 +", inputBufferIndex="+inputBufferIndex
@@ -153,6 +154,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 +", bufferInfo.size="+mBufferInfo.size
                 +", "+mDisplaySurface
                 );*/
+        int outputLen = -1;
         if (outputBufferIndex >= 0)
         {
             if (null == mDisplaySurface || !mDisplaySurface.isValid())
@@ -160,9 +162,8 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 ByteBuffer outputBuffer = isSdk19 ? getOutputBuffer19(outputBufferIndex) : getOutputBuffer21(outputBufferIndex);
                 if (outputData != null && outputBuffer != null && mBufferInfo.size > 0)
                 {
-                    len = mBufferInfo.size;
-
-                    outputData.setData(outputBuffer, len);
+                    outputLen = mBufferInfo.size;
+                    outputData.setData(outputBuffer, outputLen);
                 }
                 mMediaCodec.releaseOutputBuffer(outputBufferIndex, false);
             }
@@ -187,32 +188,32 @@ public abstract class AndroidVideoCodec implements MediaCodecable
             
             if (!isEncoder() && Build.VERSION.SDK_INT >=19)
             {
-            	Bundle bundle = new Bundle();
-            	bundle.putInt(MediaFormat.KEY_WIDTH,  format.getInteger(MediaFormat.KEY_WIDTH));
-            	bundle.putInt(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT));
-            	
-            	//byte[] header_sps = { 0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108 };
-            	//byte[] header_pps = { 0, 0, 0, 1, 104, -18, 60, -128 };
-            	ByteBuffer buf = format.getByteBuffer("csd-0");
-            	if (null != buf)
-            	{
-            		bundle.putByteArray("csd-0", buf.array());
-            	}
-            	buf = format.getByteBuffer("csd-1");
-            	if (null != buf)
-            	{
-            		bundle.putByteArray("csd-1", buf.array());
-            	}
-            	bundle.putInt(MediaFormat.KEY_MAX_INPUT_SIZE, 1920 * 1080);
-            	bundle.putInt("durationUs", 63446722);
-            	try
-            	{
-            		mMediaCodec.setParameters(bundle);
-            	}
-            	catch (Exception e)
-            	{
-            		//
-            	}
+                Bundle bundle = new Bundle();
+                bundle.putInt(MediaFormat.KEY_WIDTH,  format.getInteger(MediaFormat.KEY_WIDTH));
+                bundle.putInt(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT));
+                
+                //byte[] header_sps = { 0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108 };
+                //byte[] header_pps = { 0, 0, 0, 1, 104, -18, 60, -128 };
+                ByteBuffer buf = format.getByteBuffer("csd-0");
+                if (null != buf)
+                {
+                    bundle.putByteArray("csd-0", buf.array());
+                }
+                buf = format.getByteBuffer("csd-1");
+                if (null != buf)
+                {
+                    bundle.putByteArray("csd-1", buf.array());
+                }
+                bundle.putInt(MediaFormat.KEY_MAX_INPUT_SIZE, 1920 * 1080);
+                bundle.putInt("durationUs", 63446722);
+                try
+                {
+                    mMediaCodec.setParameters(bundle);
+                }
+                catch (Exception e)
+                {
+                    //
+                }
             }
         }
         else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER)
@@ -222,37 +223,37 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         
         if (errorCount >= MAX_ERROR_COUNT)
         {
-        	return -1;
+            return -1;
         }
-        return len;
+        return outputLen;
     }
 
     @Override
     public void release()
     {
-    	if (mMediaCodec == null)
-    	{
-    		return;
-    	}
-    	final MediaCodec codec = mMediaCodec;
-    	mMediaCodec = null;
-    	
-    	new Thread(new Runnable()
-    	{
-    		@Override
-    		public void run()
-    		{
-		        try
-		        {
-		        	codec.stop();
-		        	codec.release();
-		        }
-		        catch (Exception e)
-		        {
-		            e.printStackTrace();
-		        }
-    		}
-    	}).start();
+        if (mMediaCodec == null)
+        {
+            return;
+        }
+        final MediaCodec codec = mMediaCodec;
+        mMediaCodec = null;
+        
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    codec.stop();
+                    codec.release();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     //}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}} MediaCodecable
@@ -264,7 +265,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
 
         //30K BLACK SCRN, 40K OK
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 		 FPS_CONTROLLED);
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,          FPS_CONTROLLED);
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
 
         mediaFormat.setInteger(MediaFormat.KEY_WIDTH,  mWidth);
@@ -284,7 +285,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         mediaFormat.setInteger("intra-refresh-CIR-mbs", mbs);
         mediaFormat.setInteger("intra-refresh-mode", 0);
         
-		byte[] header_sps = { 0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108 };
+        byte[] header_sps = { 0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108 };
         mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(header_sps));
 
         byte[] header_pps = { 0, 0, 0, 1, 104, -18, 60, -128 };
@@ -301,14 +302,14 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     private ByteBuffer getInputBuffer21(int index)
     {
         return mMediaCodec.getInputBuffers()[index];
-    	//return mMediaCodec.getInputBuffer(index);
+        //return mMediaCodec.getInputBuffer(index);
     }
     
     @TargetApi(21)
     private ByteBuffer getOutputBuffer21(int index)
     {
         return mMediaCodec.getOutputBuffers()[index];
-    	//return mMediaCodec.getOutputBuffer(index);
+        //return mMediaCodec.getOutputBuffer(index);
     }
     
     @TargetApi(19)
@@ -335,20 +336,20 @@ public abstract class AndroidVideoCodec implements MediaCodecable
 
     public final int getWidth()
     {
-    	return mWidth;
+        return mWidth;
     }
     
     public final int getHeight()
     {
-    	return mHeight;
+        return mHeight;
     }
     
     public final int getFps()
     {
-    	if (mFpsCounter != null)
-    	{
-    		return mFpsCounter.getFps();
-    	}
+        if (mFpsCounter != null)
+        {
+            return mFpsCounter.getFps();
+        }
         return 0;
     }
     
