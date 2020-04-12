@@ -154,7 +154,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 +", bufferInfo.size="+mBufferInfo.size
                 +", "+mDisplaySurface
                 );*/
-        int outputLen = -1;
+        int outputLen = 0;
         if (outputBufferIndex >= 0)
         {
             if (null == mDisplaySurface || !mDisplaySurface.isValid())
