@@ -12,13 +12,22 @@ public final class MediaCodecData
 	public  final static int INDEX_CHANGED 		= 2;
 	public  final static int INDEX_SIZE			= 3;
 	
-	
+    public MediaCodecData(int width, int height)
+    {
+        int size = width*height*2;
+        if (size < 128*1024)
+        {
+            size = 128*1024;
+        }
+        setData(new byte[size]);
+        
+        mInfo = new int[INFO_SIZE];
+        mInfo[INDEX_WIDTH]  = width;
+        mInfo[INDEX_HEIGHT] = height;
+    }
+    	
 	public int[] getInfo()
 	{
-		if (null == mInfo)
-		{
-			mInfo = new int[INFO_SIZE];
-		}
 		return mInfo;
 	}
 	

@@ -1,9 +1,1 @@
 eclipse.preferences.version=1
-encoding//src/net/quantum6/fps/FpsAbstract.java=UTF-8
-encoding//src/net/quantum6/fps/FpsController.java=UTF-8
-encoding//src/net/quantum6/kit/Log.java=UTF-8
-encoding//src/net/quantum6/mediacodec/AndroidVideoCodec.java=UTF-8
-encoding//src/net/quantum6/mediacodec/AndroidVideoDecoder.java=UTF-8
-encoding//src/net/quantum6/mediacodec/AndroidVideoEncoder.java=UTF-8
-encoding//src/net/quantum6/mediacodec/MediaCodecData.java=UTF-8
-encoding//src/net/quantum6/mediacodec/MediaCodecKit.java=UTF-8
