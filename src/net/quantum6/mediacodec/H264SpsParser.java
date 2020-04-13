@@ -138,15 +138,12 @@ public class H264SpsParser
 
     public static int[] getSizeFromSps(byte[] data)
     {
-        for (int i=0; i<data.length-4; i++)
+        if (data[0]==0 && data[1]==0 && data[2]==0 && data[3]==1 && data[4]==0x67)
         {
-            if (data[i]==0 && data[i+1]==0 && data[i+2]==0 && data[i+3]==1 && data[i+4]==0x67)
-            {
-                int[] size = new int[2];
-                h264_decode_seq_parameter_set(data, data.length, size);
-                Log.d(TAG, "Sps=("+size[0]+", "+size[1]+")");
-                return size;
-            }
+            int[] size = new int[2];
+            h264_decode_seq_parameter_set(data, data.length, size);
+            Log.d(TAG, "Sps=("+size[0]+", "+size[1]+")");
+            return size;
         }
         return null;
     }
