@@ -107,12 +107,16 @@ public final class CameraKit
         return null;
     }
     
-    public static Camera.Size getCameraBestPreviewSize(final Camera.Parameters parameters, final int width, final int height){
-        
+    public static List<Camera.Size> getSupportedSizes(final Camera.Parameters parameters)
+    {
         List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
         //little to big.
         Collections.sort(supportedSizes, new SizeComparator());
+        return supportedSizes;
+    }
 
+    public static Camera.Size getCameraBestPreviewSize(final Camera.Parameters parameters, final int width, final int height){
+        List<Camera.Size> supportedSizes = getSupportedSizes(parameters);
         //first wide screen.
         Camera.Size bestSize = selectCameraSize(supportedSizes, width, height, true);
         if (null == bestSize)
