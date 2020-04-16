@@ -9,8 +9,8 @@ import android.media.MediaFormat;
 public final class AndroidVideoEncoder extends AndroidVideoCodec
 {
     private static int mColorFormat = 
-            //MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar;
-            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
+            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar;
+            //MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
 
     private static int  ENCODE_OUTPUT_BUFFER_FLAG_SPS = 2;
     private static int  ENCODE_OUTPUT_BUFFER_FLAG_KEY = 1;
