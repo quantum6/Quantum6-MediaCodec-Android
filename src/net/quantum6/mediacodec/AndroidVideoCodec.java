@@ -19,10 +19,11 @@ import net.quantum6.fps.FpsCounter;
 public abstract class AndroidVideoCodec implements MediaCodecable
 {
     private final static String TAG = AndroidVideoCodec.class.getCanonicalName();
-    public  final static int FPS_CONTROLLED  = 15;
-    public  final static int MAX_ERROR_COUNT = 100;
+    public  final static int FPS_CONTROLLED           = 15;
+    public  final static int DEFAULT_I_FRAME_INTERVAL = 50;
     
-    private final static int DEFAULT_BIT_RATE = 500*1000;
+    private final static int DEFAULT_BIT_RATE         = 500*1000;
+    public  final static int MAX_ERROR_COUNT          = 100;
     
     protected Surface mDisplaySurface;
 
@@ -264,13 +265,10 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaCodecKit.MIME_CODEC_H264, mWidth, mHeight);
 
         //30K BLACK SCRN, 40K OK
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,       FPS_CONTROLLED);
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,          FPS_CONTROLLED);
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, DEFAULT_I_FRAME_INTERVAL);
 
-        mediaFormat.setInteger(MediaFormat.KEY_WIDTH,  mWidth);
-        mediaFormat.setInteger(MediaFormat.KEY_HEIGHT, mHeight);
-        
         //KEY_MAX_WIDTH
         //KEY_MAX_HEIGHT
         //KEY_MAX_INPUT_SIZE
