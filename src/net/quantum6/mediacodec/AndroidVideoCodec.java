@@ -265,9 +265,9 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaCodecKit.MIME_CODEC_H264, mWidth, mHeight);
 
         //30K BLACK SCRN, 40K OK
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,       FPS_CONTROLLED);
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, DEFAULT_I_FRAME_INTERVAL);
+        //mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,       FPS_CONTROLLED);
+        //mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
+        //mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, DEFAULT_I_FRAME_INTERVAL);
 
         //KEY_MAX_WIDTH
         //KEY_MAX_HEIGHT
