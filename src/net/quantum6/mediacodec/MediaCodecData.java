@@ -49,7 +49,7 @@ public final class MediaCodecData
         {
             mDataArray = new byte[size];
         }
-        byteBuffer.get(mDataArray, 0, size);
+        byteBuffer.get(mDataArray, byteBuffer.position(), size);
     }
     
     public void clearData()

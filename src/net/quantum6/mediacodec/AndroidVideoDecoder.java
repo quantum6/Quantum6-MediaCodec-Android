@@ -1,5 +1,7 @@
 package net.quantum6.mediacodec;
 
+import java.nio.ByteBuffer;
+
 import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
@@ -12,6 +14,12 @@ public final class AndroidVideoDecoder extends AndroidVideoCodec
     //private final static String TAG = AndroidVideoDecoder.class.getCanonicalName();
 
 	private static int mInstanceCount = 0;
+	
+    private final byte[] csd0 = 
+        {
+            0x0, 0x0, 0x0, 0x1, 0x67, 0x42, 0x0, 0x29, (byte)0x8d, (byte)0x8d, 0x40, 0x28, 0x2, (byte)0xdd, 0x0, (byte)0xf0, (byte)0x88, 0x45, 0x38,
+            0x0, 0x0, 0x0, 0x1, 0x68, (byte)0xca, 0x43, (byte)0xc8 
+        };
 	
     public AndroidVideoDecoder(Surface surface, int width, int height)
     {
@@ -48,7 +56,8 @@ public final class AndroidVideoDecoder extends AndroidVideoCodec
     protected final MediaFormat getMediaFormat()
     {
         MediaFormat mediaFormat = super.getMediaFormat();
-        
+        mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(csd0));
+
         //KEY_PUSH_BLANK_BUFFERS_ON_STOP
         
         

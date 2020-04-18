@@ -2,7 +2,7 @@ package net.quantum6.kit;
 
 public final class Log
 {
-    public static boolean debug = false;
+    public static boolean debug = true;
 
     private Log()
     {
