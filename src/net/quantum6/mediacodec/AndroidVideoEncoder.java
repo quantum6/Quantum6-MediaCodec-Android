@@ -15,8 +15,8 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     private static int  ENCODE_OUTPUT_BUFFER_FLAG_SPS = 2;
     private static int  ENCODE_OUTPUT_BUFFER_FLAG_KEY = 1;
 
-    private static final int DEFAULT_VFPS     = 30;
-    private static final int DEFAULT_VGOP     = DEFAULT_VFPS*4;
+    public static final int VFPS = 15;
+    public static final int VGOP = 30;
     private static final int DEFAULT_BIT_RATE = 1000*1000;
 
     private byte[] mConfigBuffer;
@@ -62,8 +62,8 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
         
         mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE,   0);
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE,         DEFAULT_BIT_RATE);
-        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,       DEFAULT_VFPS);
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, DEFAULT_VGOP);
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE,       VFPS);
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, VGOP / VFPS);
         
         return mediaFormat;
     }
