@@ -3,8 +3,6 @@ package net.quantum6.kit;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import android.hardware.Camera;
 
@@ -12,7 +10,10 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
 {
     private final static String TAG = CameraDataThread.class.getCanonicalName();
     
-    private final static int DEFAULT_FPS = 30;
+    private final static int BUFFER_COUNT_MIN   = 2;
+    private final static int BUFFER_COUNT_MAX   = 5;
+    
+    private final static int DEFAULT_FPS  = 30;
     
     private List<byte[]>  mCameraDataList = Collections.synchronizedList(new LinkedList<byte[]>());
     private List<byte[]>  mEmptyDataList  = Collections.synchronizedList(new LinkedList<byte[]>());
@@ -36,6 +37,11 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         {
             return;
         }
+        if (mCameraDataList.size() >= BUFFER_COUNT_MAX)
+        {
+            camera.addCallbackBuffer(data);
+            return;
+        }
         
         mCamera = camera;
         
@@ -48,7 +54,7 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         {
             buffer = new byte[data.length];
         }
-        if ( buffer.length != data.length)
+        if (buffer.length != data.length)
         {
             mEmptyDataList.clear();
             buffer = new byte[data.length];
@@ -72,7 +78,7 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         
         while (threadRunning)
         {
-            if (mCameraDataList.size() < 2)
+            if (mCameraDataList.size() < BUFFER_COUNT_MIN)
             {
                 SystemKit.sleep(unit);
                 continue;
