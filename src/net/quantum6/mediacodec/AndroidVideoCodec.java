@@ -125,13 +125,16 @@ public abstract class AndroidVideoCodec implements MediaCodecable
         if (inputSize > 0 && inputBufferIndex >= 0)
         {
             ByteBuffer inputBuffer = isSdk19 ? getInputBuffer19(inputBufferIndex, inputSize) : getInputBuffer21(inputBufferIndex);
-            inputBuffer.clear();
-            //inputBuffer.limit(inputSize) also exception.
-            if (inputBuffer.limit() >= inputSize)
+            if (inputBuffer != null)
             {
-                inputBuffer.put(inputData.mDataArray, 0, inputSize);
-                long pts = System.nanoTime() / 1000 - mPresentTimeUs;
-                mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, pts, 0);
+                inputBuffer.clear();
+                //inputBuffer.limit(inputSize) also exception.
+                if (inputBuffer.limit() >= inputSize)
+                {
+                    inputBuffer.put(inputData.mDataArray, 0, inputSize);
+                    long pts = System.nanoTime() / 1000 - mPresentTimeUs;
+                    mMediaCodec.queueInputBuffer(inputBufferIndex, 0, inputSize, pts, 0);
+                }
             }
         }
 
@@ -160,7 +163,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
             if (null == mDisplaySurface || !mDisplaySurface.isValid())
             {
                 ByteBuffer outputBuffer = isSdk19 ? getOutputBuffer19(outputBufferIndex) : getOutputBuffer21(outputBufferIndex);
-                if (outputData != null && outputBuffer != null && mBufferInfo.size > 0)
+                if (outputBuffer != null && outputData != null && outputBuffer != null && mBufferInfo.size > 0)
                 {
                     //outputBuffer.position(mBufferInfo.offset);
                     //outputBuffer.limit(mBufferInfo.offset + mBufferInfo.size);
@@ -305,14 +308,22 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     @TargetApi(21)
     private ByteBuffer getInputBuffer21(int index)
     {
-        return mMediaCodec.getInputBuffers()[index];
+        if (mMediaCodec.getInputBuffers() != null)
+        {
+            return mMediaCodec.getInputBuffers()[index];
+        }
+        return null;
         //return mMediaCodec.getInputBuffer(index);
     }
     
     @TargetApi(21)
     private ByteBuffer getOutputBuffer21(int index)
     {
-        return mMediaCodec.getOutputBuffers()[index];
+        if (mMediaCodec.getOutputBuffers() != null)
+        {
+            return mMediaCodec.getOutputBuffers()[index];
+        }
+        return null;
         //return mMediaCodec.getOutputBuffer(index);
     }
     
