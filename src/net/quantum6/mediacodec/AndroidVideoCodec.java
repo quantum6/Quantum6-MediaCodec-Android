@@ -50,7 +50,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     protected final boolean initParams(Surface surface, int width, int height)
     {
         mDisplaySurface = surface;
-        mWidth = width;
+        mWidth  = width;
         mHeight = height;
 
         try
@@ -189,7 +189,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
             inputData.getInfo()[MediaCodecData.INDEX_WIDTH]   = mWidth;
             inputData.getInfo()[MediaCodecData.INDEX_HEIGHT]  = mHeight;
             inputData.getInfo()[MediaCodecData.INDEX_CHANGED] = 1;
-            
+            /*
             if (!isEncoder() && Build.VERSION.SDK_INT >=19)
             {
                 Bundle bundle = new Bundle();
@@ -219,6 +219,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                     //
                 }
             }
+            */
         }
         else if (outputBufferIndex == MediaCodec.INFO_TRY_AGAIN_LATER)
         {
