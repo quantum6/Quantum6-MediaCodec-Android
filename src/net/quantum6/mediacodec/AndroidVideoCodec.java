@@ -308,7 +308,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     @TargetApi(21)
     private ByteBuffer getInputBuffer21(int index)
     {
-        if (mMediaCodec.getInputBuffers() != null)
+        if (mMediaCodec != null && mMediaCodec.getInputBuffers() != null)
         {
             return mMediaCodec.getInputBuffers()[index];
         }
@@ -319,7 +319,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
     @TargetApi(21)
     private ByteBuffer getOutputBuffer21(int index)
     {
-        if (mMediaCodec.getOutputBuffers() != null)
+        if (mMediaCodec != null && mMediaCodec.getOutputBuffers() != null)
         {
             return mMediaCodec.getOutputBuffers()[index];
         }
