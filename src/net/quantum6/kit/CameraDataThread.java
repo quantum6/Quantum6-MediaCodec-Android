@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.quantum6.fps.FpsCounter;
+
 import android.hardware.Camera;
 
 public abstract class CameraDataThread implements Runnable, Camera.PreviewCallback
@@ -18,6 +20,7 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
     private List<byte[]>  mCameraDataList = Collections.synchronizedList(new LinkedList<byte[]>());
     private List<byte[]>  mEmptyDataList  = Collections.synchronizedList(new LinkedList<byte[]>());
 
+    private FpsCounter mFps = new FpsCounter();;
     private boolean threadRunning;
     private Camera mCamera;
 
@@ -30,6 +33,11 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         mEmptyDataList.clear();
     }
     
+    public int getFps()
+    {
+        return mFps.getFpsAndClear();
+    }
+    
     @Override
     public void onPreviewFrame(final byte[] data, final Camera camera)
     {
@@ -37,6 +45,9 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         {
             return;
         }
+        
+        mFps.count();
+        
         if (mCameraDataList.size() >= BUFFER_COUNT_MAX)
         {
             camera.addCallbackBuffer(data);
