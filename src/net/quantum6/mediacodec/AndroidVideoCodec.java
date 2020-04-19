@@ -165,8 +165,8 @@ public abstract class AndroidVideoCodec implements MediaCodecable
                 ByteBuffer outputBuffer = isSdk19 ? getOutputBuffer19(outputBufferIndex) : getOutputBuffer21(outputBufferIndex);
                 if (outputBuffer != null && outputData != null && outputBuffer != null && mBufferInfo.size > 0)
                 {
-                    //outputBuffer.position(mBufferInfo.offset);
-                    //outputBuffer.limit(mBufferInfo.offset + mBufferInfo.size);
+                    outputBuffer.position(mBufferInfo.offset);
+                    outputBuffer.limit(mBufferInfo.offset + mBufferInfo.size);
 
                     outputLen = mBufferInfo.size;
                     outputData.setData(outputBuffer, outputLen);
