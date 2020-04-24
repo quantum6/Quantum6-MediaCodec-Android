@@ -88,9 +88,9 @@ public final class SystemKit
             reader.close();
             cpuInfos = load.split(" ");
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             return;
         }
 
