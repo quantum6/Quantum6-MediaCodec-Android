@@ -20,6 +20,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -133,6 +136,9 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
     }
 
 	public void setBuffer(ByteBuffer buffer, int bufferWidth, int bufferHeight){
+	    mValidDataList.clear();
+	    mEmptyDataList.clear();
+	    
 		mBuffer          = buffer;
 		mBufferWidthY    = bufferWidth;
 		mBufferHeightY   = bufferHeight;
@@ -167,10 +173,18 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
         GLES20.glUseProgram(mProgram);
         checkGlError("glUseProgram");
 
+        if (mValidDataList.size() < BUFFER_COUNT_MIN)
+        {
+            return;
+        }
         if (mBuffer == null)
         {
             mBuffer = ByteBuffer.allocateDirect(mBufferWidthY*mBufferHeightY*3/2);
         }
+        byte[] newData = mValidDataList.get(0);
+        mBuffer.rewind();
+        mBuffer.put(newData);
+        
         if(mBuffer != null){
         	synchronized(this){        	    
 		        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -191,6 +205,8 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
         }
         
 	    GLES20.glDrawElements(GLES20.GL_TRIANGLES, INDICES_DATA.length, GLES20.GL_UNSIGNED_SHORT, mIndices);
+	    
+	    this.mEmptyDataList.add(newData);
     }
 
     public void onSurfaceChanged(GL10 glUnused, int width, int height) {
@@ -346,4 +362,26 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
             throw new RuntimeException(op + ": glError " + error);
         }
     }
+    
+    private final static int BUFFER_COUNT_MIN   = 2;
+    
+    private List<byte[]>  mValidDataList = Collections.synchronizedList(new LinkedList<byte[]>());
+    private List<byte[]>  mEmptyDataList = Collections.synchronizedList(new LinkedList<byte[]>());
+    
+    public void newDataArrived(final byte[] data)
+    {
+        byte[] newData;
+        if (mEmptyDataList.size() > 0)
+        {
+            newData = mEmptyDataList.remove(0);
+        }
+        else
+        {
+            newData = new byte[data.length];
+        }
+        System.arraycopy(data, 0, newData, 0, data.length);
+        mValidDataList.add(newData);
+        this.requestRender();
+    }
+
 }
