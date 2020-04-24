@@ -20,9 +20,14 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
     private List<byte[]>  mCameraDataList = Collections.synchronizedList(new LinkedList<byte[]>());
     private List<byte[]>  mEmptyDataList  = Collections.synchronizedList(new LinkedList<byte[]>());
 
-    private FpsCounter mFps = new FpsCounter();;
+    private FpsCounter mFps = new FpsCounter();
     private boolean threadRunning;
     private Camera mCamera;
+    
+    private long timeLast;
+    private long[] timeArray = new long[DEFAULT_FPS*10];
+    private int timeIndex;
+    private long timeMax;
 
     public abstract void onCameraDataArrived(final byte[] data, Camera camera);
     
@@ -38,6 +43,11 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
         return mFps.getFpsAndClear();
     }
     
+    public long getMaxTime()
+    {
+        return timeMax;
+    }
+    
     @Override
     public void onPreviewFrame(final byte[] data, final Camera camera)
     {
@@ -46,8 +56,33 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
             return;
         }
         
+        // check max time.
+        if (timeLast == 0)
+        {
+            timeLast = System.currentTimeMillis();
+        }
+        else
+        {
+            long currentTime = System.currentTimeMillis();
+            timeArray[timeIndex] = (currentTime-timeLast);
+            timeIndex ++;
+            if (timeIndex == timeArray.length)
+            {
+                timeIndex = 0;
+            }
+            timeLast = currentTime;
+            
+            timeMax = 0;
+            for (int i=0; i<timeArray.length; i++)
+            {
+                if (timeMax < timeArray[i])
+                {
+                    timeMax = timeArray[i];
+                }
+            }
+        }
+
         mFps.count();
-        
         if (mCameraDataList.size() >= BUFFER_COUNT_MAX)
         {
             camera.addCallbackBuffer(data);
