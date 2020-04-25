@@ -25,7 +25,7 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
     private Camera mCamera;
     
     private long timeLast;
-    private long[] timeArray = new long[DEFAULT_FPS*10];
+    private long[] timeArray = new long[DEFAULT_FPS*5];
     private int timeIndex;
     private long timeMax;
 
