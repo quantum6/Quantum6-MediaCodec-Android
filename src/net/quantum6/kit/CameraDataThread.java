@@ -120,7 +120,7 @@ public abstract class CameraDataThread implements Runnable, Camera.PreviewCallba
     {
         threadRunning = true;
         long unit = 1000/DEFAULT_FPS;
-        Log.e(TAG, "run()"+threadRunning);
+        //Log.e(TAG, "run()"+threadRunning);
         
         while (threadRunning)
         {
