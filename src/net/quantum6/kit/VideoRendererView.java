@@ -134,6 +134,8 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
 		mBufferPositionY = 0;
 		mBufferPositionU = (mBufferWidthY * mBufferHeightY);
 		mBufferPositionV = (mBufferPositionU + (mBufferWidthUV * mBufferHeightUV));
+
+		setViewport(getWidth(), getHeight());
 	}
 
 	public boolean isReady(){
@@ -327,16 +329,16 @@ public class VideoRendererView extends GLSurfaceView implements GLSurfaceView.Re
     
     private void setViewport(int width, int height){
     	if(mFullScreenRequired){
-    		mViewWidth = width;
+    		mViewWidth  = width;
     		mViewHeight = height;
     		mViewX = mViewY = 0;
     	}
     	else{
     		float fRatio = ((float) mBufferWidthY / (float) mBufferHeightY);
-			mViewWidth = (int) ((float) width / fRatio) > height ? (int) ((float) height * fRatio) : width;
-			mViewHeight = (int) (mViewWidth / fRatio) > height ? height : (int) (mViewWidth / fRatio);
-			mViewX = ((width - mViewWidth) >> 1);
-			mViewY = ((height - mViewHeight) >> 1);
+			mViewWidth   = (int) ((float) width / fRatio) > height ? (int) ((float) height * fRatio) : width;
+			mViewHeight  = (int) (mViewWidth / fRatio) > height ? height : (int) (mViewWidth / fRatio);
+			mViewX       = ((width - mViewWidth) >> 1);
+			mViewY       = ((height - mViewHeight) >> 1);
     	}
     }
 
