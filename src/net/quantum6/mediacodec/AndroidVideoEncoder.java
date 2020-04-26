@@ -8,6 +8,7 @@ import android.media.MediaFormat;
 @SuppressLint("NewApi")
 public final class AndroidVideoEncoder extends AndroidVideoCodec
 {
+    @SuppressWarnings("deprecation")
     private static int mColorFormat = 
             //MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar;
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
@@ -20,6 +21,7 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     private static final int DEFAULT_BIT_RATE = 1000*1000;
 
     private byte[] mConfigBuffer;
+    private byte[] tempBuffer;
     //private AtomicInteger videoFrameCacheNumber = new AtomicInteger(0);
 
     public AndroidVideoEncoder(int width, int height, int framerate, int bitrate)
@@ -76,14 +78,18 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     	{
             if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar)
             {
-                MediaCodecKit.YUV420SP_UV_EXCHANGE(mWidth, mHeight, inputData.mDataArray);
+                MediaCodecKit.NV21_TO_YUV420SP(mWidth, mHeight, inputData.mDataArray);
             }
             else if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar)
             {
+                if (tempBuffer == null || tempBuffer.length != inputSize)
+                {
+                    tempBuffer = new byte[inputSize];
+                    //inputData.mDataSize = inputSize;
+                }
                 //Log.d(TAG, "MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar="+inputSize);
-                byte[] dest = new byte[inputSize];
-                MediaCodecKit.NV21_2_yuv420p(dest, inputData.mDataArray, mWidth, mHeight);
-                inputData.mDataArray = dest;
+                MediaCodecKit.NV21_TO_YUV420P(tempBuffer, inputData.mDataArray, mWidth, mHeight);
+                System.arraycopy(tempBuffer, 0, inputData.mDataArray, 0, inputSize);
             }
     	}
         

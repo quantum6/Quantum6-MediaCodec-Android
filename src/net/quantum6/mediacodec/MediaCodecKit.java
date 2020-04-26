@@ -146,7 +146,7 @@ public final class MediaCodecKit
     
     //}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 
-    public final static void YUV420SP_UV_EXCHANGE(int width, int height, byte[] in)
+    public final static void NV21_TO_YUV420SP(int width, int height, byte[] in)
     {
         int pixels = width * height;
         byte s;
@@ -162,12 +162,10 @@ public final class MediaCodecKit
     /*
      * NV21: YYYYYYYY VUVU =>YUV420SP I420: YYYYYYYY UU VV =>YUV420P
      */
-    public final static int NV21_2_yuv420p(byte[] dst, byte[] src, int w, int h)
+    public final static int NV21_TO_YUV420P(byte[] dst, byte[] src, int w, int h)
     {
         int ysize = w * h;
-        int usize = w * h * 1 / 4;
-
-        byte[] dsttmp = dst;
+        int usize = ysize >>  2;
 
         // y
         System.arraycopy(src, 0, dst, 0, ysize);
@@ -196,10 +194,6 @@ public final class MediaCodecKit
             srcPointer += 2;
             count--;
         }
-
-        dst = dsttmp;
-
-        // _EF_TIME_DEBUG_END(0x000414141);
 
         return 0;
     }
