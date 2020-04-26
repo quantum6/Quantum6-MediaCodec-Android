@@ -1,10 +1,8 @@
 package net.quantum6.fps;
 
-import net.quantum6.kit.Log;
-
 public final class FpsController extends FpsAbstract
 {
-    private final static String TAG = FpsController.class.getCanonicalName();
+    //private final static String TAG = FpsController.class.getCanonicalName();
 
     private int mFpsWant;
 
