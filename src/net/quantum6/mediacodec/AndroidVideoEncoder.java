@@ -1,5 +1,7 @@
 package net.quantum6.mediacodec;
 
+import java.util.Arrays;
+
 import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
@@ -23,12 +25,21 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     private byte[] mConfigBuffer;
     private byte[] tempBuffer;
     //private AtomicInteger videoFrameCacheNumber = new AtomicInteger(0);
+    private int mRotate;
+    private byte[] rotateBuffer;
 
-    public AndroidVideoEncoder(int width, int height, int framerate, int bitrate)
+    public AndroidVideoEncoder(int width, int height, int rotate, int framerate, int bitrate)
     {
         //listCodec();
         //mFramerate = framerate;
         //mBitrate = bitrate;
+        mRotate = rotate;
+        if (mRotate == 90 || mRotate == 180)
+        {
+            int temp = height;
+            height = width;
+            width = temp;
+        }
         super.initParams(null, width, height);
     }
 
@@ -70,6 +81,36 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
         return mediaFormat;
     }
 
+    private void rotateNV21(MediaCodecData inputData)
+    {
+        if (mRotate == 0)
+        {
+            return;
+        }
+        
+        if (rotateBuffer == null || rotateBuffer.length != inputData.mDataSize)
+        {
+            rotateBuffer = new byte[inputData.mDataSize];
+        }
+        if (mRotate == 90)
+        {
+            MediaCodecKit.NV21_rotate_to_90(inputData.mDataArray, rotateBuffer, mHeight, mWidth);
+        }
+        else if (mRotate == 180)
+        {
+            MediaCodecKit.NV21_rotate_to_180(inputData.mDataArray, rotateBuffer, mWidth, mHeight);
+        }
+        else if (mRotate == 270)
+        {
+            MediaCodecKit.NV21_rotate_to_270(inputData.mDataArray, rotateBuffer, mHeight, mWidth);
+        }
+        else
+        {
+            return;
+        }
+        System.arraycopy(rotateBuffer, 0, inputData.mDataArray, 0, inputData.mDataSize);
+    }
+    
     @Override
     public int process(MediaCodecData inputData, MediaCodecData outputData)
     {
@@ -78,6 +119,7 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
     	{
             if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar)
             {
+                rotateNV21(inputData);
                 MediaCodecKit.NV21_TO_YUV420SP(mWidth, mHeight, inputData.mDataArray);
             }
             else if (mColorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar)
