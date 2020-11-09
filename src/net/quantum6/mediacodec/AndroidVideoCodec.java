@@ -46,7 +46,7 @@ public abstract class AndroidVideoCodec implements MediaCodecable
 
     //}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
     
-    protected final boolean initParams(Surface surface, int width, int height)
+    protected final boolean initParams(Surface surface, int width, int height, int rotate)
     {
         mDisplaySurface = surface;
         mWidth  = width;

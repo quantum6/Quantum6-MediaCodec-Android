@@ -21,20 +21,20 @@ public final class AndroidVideoDecoder extends AndroidVideoCodec
             0x0, 0x0, 0x0, 0x1, 0x68, (byte)0xca, 0x43, (byte)0xc8 
         };
 	
-    public AndroidVideoDecoder(Surface surface, int width, int height)
+    public AndroidVideoDecoder(Surface surface, int width, int height, int rotate)
     {
         mInstanceCount ++;
-    	setSurface(surface, width, height);
+    	setSurface(surface, width, height, rotate);
     }
     
-    public void setSurface(Surface surface, int width, int height)
+    public void setSurface(Surface surface, int width, int height, int rotate)
     {
     	if (surface == null)
     	{
     		return;
     	}
     	
-        boolean result = super.initParams(surface, width, height);
+        boolean result = super.initParams(surface, width, height, rotate);
         if (result && mDisplaySurface != null)
         {
         	mMediaCodec.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);

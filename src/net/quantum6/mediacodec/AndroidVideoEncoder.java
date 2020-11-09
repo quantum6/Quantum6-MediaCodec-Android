@@ -37,10 +37,10 @@ public final class AndroidVideoEncoder extends AndroidVideoCodec
         if (mRotate == 90 || mRotate == 180)
         {
             int temp = height;
-            height = width;
-            width = temp;
+            height   = width;
+            width    = temp;
         }
-        super.initParams(null, width, height);
+        super.initParams(null, width, height, rotate);
     }
 
 
